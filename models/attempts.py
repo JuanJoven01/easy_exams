@@ -11,3 +11,4 @@ class ExamAttempt(models.Model):
     end_time = fields.Datetime(string="End Time")
     score = fields.Float(string="Score")
     answer_ids = fields.One2many('easy_exams.question_answer', 'attempt_id', string="Answers")
+    

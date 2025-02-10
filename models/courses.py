@@ -8,4 +8,5 @@ class Course(models.Model):
     code = fields.Char(string="Course Code", required=True, unique=True)
     access_key = fields.Char(string="Access Key", required=True)
     exam_ids = fields.One2many('easy_exams.exam', 'course_id', string="Exams")
+    user_ids = fields.Many2many('res.users', string="Authorized Users")
     

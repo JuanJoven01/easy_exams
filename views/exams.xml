@@ -1,14 +1,14 @@
 <odoo>
-  <record id="view_easy_exams_exam_list" model="ir.ui.view">
+    <record id="view_easy_exams_exam_list" model="ir.ui.view">
         <field name="name">easy_exams.exam.list</field>
         <field name="model">easy_exams.exam</field>
         <field name="arch" type="xml">
-            <tree>
+            <list>
                 <field name="name"/>
                 <field name="course_id"/>
                 <field name="duration"/>
                 <field name="is_active"/>
-            </tree>
+            </list>
         </field>
     </record>
 

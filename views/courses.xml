@@ -3,11 +3,11 @@
         <field name="name">easy_exams.course.list</field>
         <field name="model">easy_exams.course</field>
         <field name="arch" type="xml">
-            <tree>
+            <list>
                 <field name="name"/>
                 <field name="code"/>
                 <field name="description"/>
-            </tree>
+            </list>
         </field>
     </record>
 

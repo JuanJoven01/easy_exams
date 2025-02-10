@@ -1,5 +1,5 @@
 <odoo>
-<record id="view_easy_exams_question_form" model="ir.ui.view">
+    <record id="view_easy_exams_question_form" model="ir.ui.view">
         <field name="name">easy_exams.question.form</field>
         <field name="model">easy_exams.question</field>
         <field name="arch" type="xml">
@@ -12,20 +12,20 @@
                         <field name="image" widget="image"/>
                     </group>
                     <notebook>
-                        <page string="Options" attrs="{'invisible': [('question_type', '!=', 'multiple_choice')]}" >
+                        <page string="Options" invisible="question_type != 'multiple_choice'">
                             <field name="option_ids">
-                                <tree editable="bottom">
+                                <list editable="bottom">
                                     <field name="content"/>
                                     <field name="is_correct"/>
-                                </tree>
+                                </list>
                             </field>
                         </page>
-                        <page string="Pairs" attrs="{'invisible': [('question_type', '!=', 'matching')]}" >
+                        <page string="Pairs" invisible="question_type != 'matching'">
                             <field name="pair_ids">
-                                <tree editable="bottom">
+                                <list editable="bottom">
                                     <field name="term"/>
                                     <field name="match"/>
-                                </tree>
+                                </list>
                             </field>
                         </page>
                     </notebook>

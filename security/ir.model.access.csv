@@ -1,2 +1,10 @@
-id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
-access_easy_exams_easy_exams,easy_exams.easy_exams,model_easy_exams_easy_exams,base.group_user,1,1,1,1
+"id","name","model_id:id","group_id:id","perm_read","perm_write","perm_create","perm_unlink"
+"access_easy_exams_admin","Easy Exams Admin","model_easy_exams_course","base.group_system",1,1,1,1
+"access_easy_exams_manager","Easy Exams Manager","model_easy_exams_course","base.group_user",1,1,1,0
+"access_easy_exams_user","Easy Exams User","model_easy_exams_course","base.group_public",1,0,0,0
+"access_easy_exams_exam_admin","Easy Exams Exam Admin","model_easy_exams_exam","base.group_system",1,1,1,1
+"access_easy_exams_exam_manager","Easy Exams Exam Manager","model_easy_exams_exam","base.group_user",1,1,1,0
+"access_easy_exams_exam_user","Easy Exams Exam User","model_easy_exams_exam","base.group_public",1,0,0,0
+"access_easy_exams_question_admin","Easy Exams Question Admin","model_easy_exams_question","base.group_system",1,1,1,1
+"access_easy_exams_question_manager","Easy Exams Question Manager","model_easy_exams_question","base.group_user",1,1,1,0
+"access_easy_exams_question_user","Easy Exams Question User","model_easy_exams_question","base.group_public",1,0,0,0

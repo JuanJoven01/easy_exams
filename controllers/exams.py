@@ -117,6 +117,34 @@ class ExamAPI(http.Controller):
         except Exception as e:
             _logger.error(f"Error updating exam: {str(e)}")
             return _error_response(f"Error updating exam: {str(e)}", 500)
+
+    ## 🔹 [PUT] Update an Exam
+    @http.route('/api/exams/update_code/<int:exam_id>', type='jsonrpc', auth='public', methods=['PUT'], csrf=False)
+    def update_exam_code(self, exam_id, **kwargs):
+        """
+        Update an existing exam (JWT required)
+        """
+        try:
+            user_data = JWTAuth.authenticate_request()
+            user_id = user_data.get("user_id")
+
+            exam = request.env['easy_exams.exam'].sudo().search([('id', '=', exam_id), ('course_id.user_ids', 'in', user_id)], limit=1)
+            if not exam:
+                return _error_response("Exam not found or unauthorized", 404)
+            access_code = _generate_code(6)
+            update_data = {
+                'access_code': access_code,
+            }
+            exam.sudo().write(update_data)
+
+            return _success_response({'id': exam.id, 'name': exam.name}, "Exam updated successfully")
+        except ValidationError as e:
+            return _error_response(str(e), 400)
+        except AccessDenied:
+            return _error_response('Unauthorized: Access Denied', 401)
+        except Exception as e:
+            _logger.error(f"Error updating exam: {str(e)}")
+            return _error_response(f"Error updating exam: {str(e)}", 500)
         
     ## 🔹 [DELETE] Delete an Exam
     @http.route('/api/exams/delete/<int:exam_id>', type='jsonrpc', auth='public', methods=['DELETE'], csrf=False)

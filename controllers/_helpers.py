@@ -1,4 +1,4 @@
-import json
+import json, random, string
 from odoo.http import Response
 
 def _http_success_response(data, message="Request successful", status=200):
@@ -55,3 +55,11 @@ def _error_response(error_message, status=400):
         'message': error_message,
         'code': status
     }
+
+def _generate_code(length=6):
+    """
+    Generate a random alphanumeric code of the given length and saves that on table
+    """
+    code = ''.join(random.choices(string.ascii_uppercase + string.digits, k=length))
+
+    return code

@@ -33,7 +33,7 @@ class QuestionPairAPI(http.Controller):
         except Exception as e:
             _logger.error(f"Error retrieving pairs: {str(e)}")
             return _http_error_response(f"Error retrieving pairs: {str(e)}", 500)
-
+ 
     ## 🔹 [POST] Create a New Pair
     @http.route('/api/exams/questions/pairs/create', type='jsonrpc', auth='public', methods=['POST'], csrf=False)
     def create_question_pair(self, **kwargs):

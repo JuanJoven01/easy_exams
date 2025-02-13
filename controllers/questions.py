@@ -22,7 +22,7 @@ class QuestionAPI(http.Controller):
 
             # Ensure exam_id is provided
             if not exam_id:
-                return _error_response("Missing exam_id parameter", 400)
+                return _http_error_response("Missing exam_id parameter", 400)
 
             # Check if user has access to the exam
             exam = request.env['easy_exams.exam'].sudo().search([
@@ -31,7 +31,7 @@ class QuestionAPI(http.Controller):
             ], limit=1)
 
             if not exam:
-                return _error_response("Exam not found or unauthorized", 404)
+                return _http_error_response("Exam not found or unauthorized", 404)
 
             # Fetch questions for the exam
             questions = request.env['easy_exams.question'].sudo().search([('exam_id', '=', exam_id)])
@@ -70,7 +70,7 @@ class QuestionAPI(http.Controller):
             content = kwargs.get('content')
 
             if not exam_id or not question_type or not content:
-                return _error_response("Missing required fields", 403)
+                return _error_response("Missing required fields", 400)
 
             # Check if user has access to the exam
             exam = request.env['easy_exams.exam'].sudo().search([
@@ -100,14 +100,18 @@ class QuestionAPI(http.Controller):
             return _error_response(f"Error creating question: {str(e)}", 500)
 
     ## 🔹 [PUT] Update a Question
-    @http.route('/api/exams/questions/update/<int:question_id>', type='jsonrpc', auth='public', methods=['PUT'], csrf=False)
-    def update_question(self, question_id, **kwargs):
+    @http.route('/api/exams/questions/update', type='jsonrpc', auth='public', methods=['PUT'], csrf=False)
+    def update_question(self, **kwargs):
         """
         Update an existing question (JWT required)
         """
         try:
             user_data = JWTAuth.authenticate_request()
             user_id = user_data.get("user_id")
+
+            question_id = kwargs.get('question_id')
+            if not question_id:
+                return _error_response('Question id is required', 400)
 
             # Find the question
             question = request.env['easy_exams.question'].sudo().search([

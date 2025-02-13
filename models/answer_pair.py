@@ -4,7 +4,6 @@ class QuestionAnswerPair(models.Model):
     _name = 'easy_exams.question_answer_pair'
     _description = 'Question Answer Pair'
 
-    question_answer_id = fields.Many2one('easy_exams.question_answer', string="Question Answer", required=True)
+    answer_id = fields.Many2one('easy_exams.question_answer', string="Question Answer", required=True)
     question_pair_id = fields.Many2one('easy_exams.question_pair', string="Question Pair", required=True)
-    selected_term = fields.Char(string="Selected Term", required=True)
     selected_match = fields.Char(string="Selected Match", required=True)

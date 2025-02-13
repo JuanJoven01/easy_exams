@@ -70,7 +70,7 @@ class ExamAttemptAPI(http.Controller):
                 'score': kwargs.get('score', 0),
             })
 
-            return _success_response({'id': new_attempt.id, 'student_name': new_attempt.student_name}, "Exam attempt created successfully.")
+            return _success_response({'exam_time' : exam.duration  ,'id': new_attempt.id, 'student_name': new_attempt.student_name}, "Exam attempt created successfully.")
 
         except Exception as e:
             _logger.error(f"Error creating exam attempt: {str(e)}")

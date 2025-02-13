@@ -69,14 +69,18 @@ class QuestionOptionAPI(http.Controller):
             return _error_response(f"Error creating option: {str(e)}", 500)
         
     ## 🔹 [PUT] Update a Question Option
-    @http.route('/api/exams/question_options/update/<int:option_id>', type='jsonrpc', auth='public', methods=['PUT'], csrf=False)
-    def update_question_option(self, option_id, **kwargs):
+    @http.route('/api/exams/question_options/update', type='jsonrpc', auth='public', methods=['PUT'], csrf=False)
+    def update_question_option(self, **kwargs):
         """
         Update an existing question option (JWT required)
         """
         try:
             user_data = JWTAuth.authenticate_request()
             user_id = user_data.get("user_id")
+
+            option_id = kwargs.get('option_id')
+            if not option_id:
+                return _error_response('Option id is required', 400)
 
             option = request.env['easy_exams.question_option'].sudo().browse(option_id)
 

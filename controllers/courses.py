@@ -60,22 +60,13 @@ class CoursesAPI(http.Controller):
             # Create the course
             new_course = request.env['easy_exams.course'].sudo().create({
                 'name': name,
-                'description': kwargs.get('description'),
+                'description': kwargs.get('description', ''),
                 'code': code,
                 'access_key': access_key,  # Not encrypted for now
                 'user_ids': [(4, user_id)],  # Assign first user
             })
 
-            # Prepare response data
-            course_data = {
-                'id': new_course.id,
-                'name': new_course.name,
-                'description': new_course.description,
-                'code': new_course.code,
-                'access_key': new_course.access_key,
-            }
-
-            return _success_response(course_data, "Course created successfully.")
+            return _success_response({'course_id' : new_course.id}, "Course created successfully.")
         
         except AccessDenied:
             return _error_response('Unauthorized: Access Denied', 401)
@@ -85,8 +76,8 @@ class CoursesAPI(http.Controller):
 
 
     ## 🔹 [PUT] Update Course
-    @http.route('/api/exams/courses/update/<int:course_id>', type='jsonrpc', auth='public', methods=['PUT'], csrf=False)
-    def update_exam_course(self, course_id, **kwargs):
+    @http.route('/api/exams/courses/update/', type='jsonrpc', auth='public', methods=['PUT'], csrf=False)
+    def update_exam_course(self, **kwargs):
         """
         Updates an existing course if the user has access.
         """
@@ -94,6 +85,9 @@ class CoursesAPI(http.Controller):
             user_data = JWTAuth.authenticate_request()  # Validate JWT
             user_id = user_data.get("user_id")
 
+            course_id = kwargs.get("course_id")
+            if not course_id:
+                return _error_response('Course id is required', 400)
             # Find the course
             course = request.env['easy_exams.course'].sudo().search([
                 ('id', '=', course_id),
@@ -107,7 +101,6 @@ class CoursesAPI(http.Controller):
             course.write({
                 'name': kwargs.get('name', course.name),
                 'description': kwargs.get('description', course.description),
-                'access_key': kwargs.get('access_key', course.access_key),  # Keep as is if not provided
             })
 
             # Prepare response

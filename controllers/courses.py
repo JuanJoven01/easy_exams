@@ -121,7 +121,7 @@ class CoursesAPI(http.Controller):
             return _error_response(f"Error updating course: {str(e)}", 500)
         
     ## 🔹 [DELETE] Delete Course
-    @http.route('/api/exams/courses/delete/<int:course_id>', type='jsonrpc', auth='public', methods=['DELETE'], csrf=False)
+    @http.route('/api/exams/courses/delete/<int:course_id>', type='http', auth='public', methods=['DELETE'], csrf=False)
     def delete_exam_course(self, course_id, **kwargs):
         """
         Deletes a course if the user has access.
@@ -137,15 +137,15 @@ class CoursesAPI(http.Controller):
             ], limit=1)
 
             if not course:
-                return _error_response("Course not found or access denied", 400)
+                return _http_error_response("Course not found or access denied", 400)
 
             # Delete course
             course.unlink()
 
-            return _success_response({}, "Course deleted successfully.")
+            return _http_success_response({}, "Course deleted successfully.")
 
         except AccessDenied:
-            return _error_response("Unauthorized: Access Denied", 401)
+            return _http_error_response("Unauthorized: Access Denied", 401)
         except Exception as e:
             _logger.error(f"Error deleting course: {str(e)}")
-            return _error_response(f"Error deleting course: {str(e)}", 500)
+            return _http_error_response(f"Error deleting course: {str(e)}", 500)

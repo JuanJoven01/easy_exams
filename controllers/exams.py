@@ -22,9 +22,10 @@ class ExamAPI(http.Controller):
 
             # Filter exams by course_id if provided
             course_id = kwargs.get('course_id')
-            domain = [('course_id.user_ids', 'in', user_id)]
-            if course_id:
-                domain.append(('course_id', '=', int(course_id)))
+            if not course_id:
+                return _http_error_response('Course id is required')
+            
+            domain = [('course_id.user_ids', 'in', user_id), ('course_id', '=', int(course_id))]
 
             exams = request.env['easy_exams.exam'].sudo().search(domain)
 
@@ -60,7 +61,7 @@ class ExamAPI(http.Controller):
             duration = kwargs.get('duration', 45)  # Default duration is 45 mins
 
             if not name or not course_id:
-                return _error_response('Missing required fields')
+                return _error_response('Missing required fields', 400)
 
             access_code = _generate_code(6)
 
@@ -88,18 +89,20 @@ class ExamAPI(http.Controller):
             return _error_response(f"Error creating exam: {str(e)}", 500)
 
     ## 🔹 [PUT] Update an Exam
-    @http.route('/api/exams/update/<int:exam_id>', type='jsonrpc', auth='public', methods=['PUT'], csrf=False)
-    def update_exam(self, exam_id, **kwargs):
+    @http.route('/api/exams/update/', type='jsonrpc', auth='public', methods=['PUT'], csrf=False)
+    def update_exam(self, **kwargs):
         """
         Update an existing exam (JWT required)
         """
         try:
             user_data = JWTAuth.authenticate_request()
             user_id = user_data.get("user_id")
-
+            exam_id = kwargs.get('exam_id')
+            if not exam_id:
+                return _error_response('Exam id is required', 400)
             exam = request.env['easy_exams.exam'].sudo().search([('id', '=', exam_id), ('course_id.user_ids', 'in', user_id)], limit=1)
             if not exam:
-                return _error_response("Exam not found or unauthorized", 404)
+                return _error_response("Exam not found or unauthorized", 400)
 
             update_data = {
                 'name': kwargs.get('name', exam.name),
@@ -119,14 +122,18 @@ class ExamAPI(http.Controller):
             return _error_response(f"Error updating exam: {str(e)}", 500)
 
     ## 🔹 [PUT] Update an Exam
-    @http.route('/api/exams/update_code/<int:exam_id>', type='jsonrpc', auth='public', methods=['PUT'], csrf=False)
-    def update_exam_code(self, exam_id, **kwargs):
+    @http.route('/api/exams/update_code', type='jsonrpc', auth='public', methods=['PUT'], csrf=False)
+    def update_exam_code(self, **kwargs):
         """
         Update an existing exam (JWT required)
         """
         try:
             user_data = JWTAuth.authenticate_request()
             user_id = user_data.get("user_id")
+
+            exam_id = kwargs.get('exam_id')
+            if not exam_id:
+                return _error_response('Exam id is required', 400)
 
             exam = request.env['easy_exams.exam'].sudo().search([('id', '=', exam_id), ('course_id.user_ids', 'in', user_id)], limit=1)
             if not exam:
@@ -145,9 +152,41 @@ class ExamAPI(http.Controller):
         except Exception as e:
             _logger.error(f"Error updating exam: {str(e)}")
             return _error_response(f"Error updating exam: {str(e)}", 500)
+
+    ## 🔹 [PUT] Update an Exam
+    @http.route('/api/exams/update_status', type='jsonrpc', auth='public', methods=['PUT'], csrf=False)
+    def update_exam_status(self, **kwargs):
+        """
+        Update an existing exam (JWT required)
+        """
+        try:
+            user_data = JWTAuth.authenticate_request()
+            user_id = user_data.get("user_id")
+
+            exam_id = kwargs.get('exam_id')
+            if not exam_id:
+                return _error_response('Exam id is required', 400)
+
+            exam = request.env['easy_exams.exam'].sudo().search([('id', '=', exam_id), ('course_id.user_ids', 'in', user_id)], limit=1)
+            if not exam:
+                return _error_response("Exam not found or unauthorized", 404)
+
+            update_data = {
+                'is_active': not exam.is_active,
+            }
+            exam.sudo().write(update_data)
+
+            return _success_response({'id': exam.id, 'name': exam.name}, "Exam updated successfully")
+        except ValidationError as e:
+            return _error_response(str(e), 400)
+        except AccessDenied:
+            return _error_response('Unauthorized: Access Denied', 401)
+        except Exception as e:
+            _logger.error(f"Error updating exam: {str(e)}")
+            return _error_response(f"Error updating exam: {str(e)}", 500)
         
     ## 🔹 [DELETE] Delete an Exam
-    @http.route('/api/exams/delete/<int:exam_id>', type='jsonrpc', auth='public', methods=['DELETE'], csrf=False)
+    @http.route('/api/exams/delete/<int:exam_id>', type='http', auth='public', methods=['DELETE'], csrf=False)
     def delete_exam(self, exam_id, **kwargs):
         """
         Delete an exam (JWT required)
@@ -158,13 +197,13 @@ class ExamAPI(http.Controller):
 
             exam = request.env['easy_exams.exam'].sudo().search([('id', '=', exam_id), ('course_id.user_ids', 'in', user_id)], limit=1)
             if not exam:
-                return _error_response("Exam not found or unauthorized", 404)
+                return _http_error_response("Exam not found or unauthorized", 404)
 
             exam.sudo().unlink()
 
-            return _success_response({'id': exam_id}, "Exam deleted successfully")
+            return _http_success_response({'id': exam_id}, "Exam deleted successfully")
         except AccessDenied:
-            return _error_response('Unauthorized: Access Denied', 401)
+            return _http_error_response('Unauthorized: Access Denied', 401)
         except Exception as e:
             _logger.error(f"Error deleting exam: {str(e)}")
-            return _error_response(f"Error deleting exam: {str(e)}", 500)
+            return _http_error_response(f"Error deleting exam: {str(e)}", 500)

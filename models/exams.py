@@ -11,7 +11,7 @@ class Exam(models.Model):
     question_ids = fields.One2many('easy_exams.question', 'exam_id', string="Questions", order='id asc')
     access_code = fields.Char(string="Access Code", required=True)
     duration = fields.Integer(string="Duration (minutes)")
-    is_active = fields.Boolean(string='Is the exam active to responses?', required=True, default= False)
+    is_active = fields.Boolean(string='Is the exam active to responses?', default= False)
     
     @api.constrains('duration')
     def _check_duration(self):

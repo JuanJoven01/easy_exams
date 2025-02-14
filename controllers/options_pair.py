@@ -67,14 +67,17 @@ class QuestionPairAPI(http.Controller):
             return _error_response(f"Error creating pair: {str(e)}", 500)
 
     ## 🔹 [PUT] Update a Question Pair
-    @http.route('/api/exams/question_pairs/update/<int:pair_id>', type='jsonrpc', auth='public', methods=['PUT'], csrf=False)
-    def update_question_pair(self, pair_id, **kwargs):
+    @http.route('/api/exams/question_pairs/update', type='jsonrpc', auth='public', methods=['PUT'], csrf=False)
+    def update_question_pair(self, **kwargs):
         """
         Update an existing question pair (JWT required)
         """
         try:
             user_data = JWTAuth.authenticate_request()
             user_id = user_data.get("user_id")
+            pair_id = kwargs.get('pair_id')
+            if not pair_id:
+                return _error_response('Pair id is required', 400)
 
             pair = request.env['easy_exams.question_pair'].sudo().browse(pair_id)
 

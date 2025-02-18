@@ -40,7 +40,7 @@ class ExamAttemptAPI(http.Controller):
             return _http_error_response(f"Error retrieving exam attempts: {str(e)}", 500)
 
     ## 🔹 [POST] Create a New Exam Attempt
-    @http.route('/api/exams/attempts/create', type='jsonrpc', auth='public', methods=['POST'], csrf=False)
+    @http.route('/api/exams/attempts/create', type='json', auth='public', methods=['POST'], csrf=False)
     def create_exam_attempt(self, **kwargs):
         """
         Create a new exam attempt (Public - No JWT Required)
@@ -78,7 +78,7 @@ class ExamAttemptAPI(http.Controller):
 
 
     ## 🔹 [PUT] Update an Exam Attempt
-    @http.route('/api/exams/attempts/update', type='jsonrpc', auth='public', methods=['PUT'], csrf=False)
+    @http.route('/api/exams/attempts/update', type='json', auth='public', methods=['PUT'], csrf=False)
     def update_exam_attempt(self, **kwargs):
         """
         Update an existing exam attempt (JWT required)
@@ -111,7 +111,7 @@ class ExamAttemptAPI(http.Controller):
             return _error_response(f"Error updating exam attempt: {str(e)}", 500)
 
     ## 🔹 [PUT] Update an Exam Attempt finished
-    @http.route('/api/exams/attempts/update/finished', type='jsonrpc', auth='public', methods=['PUT'], csrf=False)
+    @http.route('/api/exams/attempts/update/finished', type='json', auth='public', methods=['PUT'], csrf=False)
     def update_exam_attempt_finished(self, **kwargs):
         """
         Update an existing exam attempt (JWT required)

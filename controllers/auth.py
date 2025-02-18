@@ -5,7 +5,9 @@ from odoo import http
 from odoo.http import request, Response
 from odoo.exceptions import AccessDenied
 
-# _logger = logging.getLogger(__name__)
+from ._helpers import _success_response, _error_response
+
+_logger = logging.getLogger(__name__)
 
 class JWTAuth:
     """Middleware for handling JWT authentication"""
@@ -56,25 +58,37 @@ class JWTAuth:
 
 
 class JWTAuthController(http.Controller):
-    @http.route('/api/easy_apps/expenses/auth', type='jsonrpc', auth='public', methods=['POST'], csrf=False)
+    @http.route('/api/easy_apps/exams/auth', type='json', auth='public', methods=['POST'], csrf=False)
     def login(self, **kwargs):
         """
         Authenticate user and return JWT token.
         """
-        login = kwargs.get('login')
-        password = kwargs.get('password')
+        try:
+            login = kwargs.get('login')
+            password = kwargs.get('password')
 
-        if not login or not password:
-            raise AccessDenied("Missing login or password")
+            if not login or not password:
+                return _error_response("Missing login or password", 400)
 
-        # Search for user in Odoo
-        user = request.env['res.users'].sudo().search([('login', '=', login)], limit=1)
-        
-        if not user or not user._check_password(password) or not user.has_group('easy_apps.easy_apps_group'):
-            raise AccessDenied("Invalid credentials")
+            # Search for user in Odoo
+            user = request.env['res.users'].sudo().search([('login', '=', login)], limit=1)
+            db = request.db
+            credential = { 'type': 'password', 'login': login, 'password': password }
 
-        # Generate JWT token
-        token = JWTAuth.generate_token(user)
+            if not user:
+                return _error_response("Invalid credentials", 403)
+            
+            user.sudo().authenticate(db, credential, {'interactive': True})
+            easy_apps_group_id = request.env['ir.config_parameter'].sudo().get_param('easy_app_group_id') #gets the default groups id
+            if not user.has_group(easy_apps_group_id):
+                return _error_response("Unauthorized", 403)
 
-        return {'token': token, 'user_id': user.id, 'login': user.login}
+            # Generate JWT token
+            token = JWTAuth.generate_token(user)
 
+            return _success_response({'token': token, 'user_id': user.id, 'login': user.login})
+        except AccessDenied as e:
+            return _error_response(str(e), 500)
+        except Exception as e:
+            _logger.error(str(e))
+            return _error_response('Internal server error', 500)

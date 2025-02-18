@@ -52,7 +52,7 @@ class QuestionAnswerAPI(http.Controller):
 
 
     ## 🔹 [POST] Create a New Answer
-    @http.route('/api/exams/answers/create', type='jsonrpc', auth='public', methods=['POST'], csrf=False)
+    @http.route('/api/exams/answers/create', type='json', auth='public', methods=['POST'], csrf=False)
     def create_answer(self, **kwargs):
         """
         Create a new answer for a question.
@@ -96,7 +96,7 @@ class QuestionAnswerAPI(http.Controller):
             return _error_response(f"Error creating answer: {str(e)}", 500)
 
     ## 🔹 [PUT] Update an Answer
-    @http.route('/api/exams/answers/update', type='jsonrpc', auth='public', methods=['PUT'], csrf=False)
+    @http.route('/api/exams/answers/update', type='json', auth='public', methods=['PUT'], csrf=False)
     def update_answer(self, **kwargs):
         """
         Update an existing answer.

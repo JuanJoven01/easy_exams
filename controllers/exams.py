@@ -47,7 +47,7 @@ class ExamAPI(http.Controller):
             return _http_error_response(f"Error retrieving exams: {str(e)}", 500)
 
     ## 🔹 [POST] Create a New Exam
-    @http.route('/api/exams/create', type='jsonrpc', auth='public', methods=['POST'], csrf=False)
+    @http.route('/api/exams/create', type='json', auth='public', methods=['POST'], csrf=False)
     def create_exam(self, **kwargs):
         """
         Create a new exam under an authorized course (JWT required)
@@ -89,7 +89,7 @@ class ExamAPI(http.Controller):
             return _error_response(f"Error creating exam: {str(e)}", 500)
 
     ## 🔹 [PUT] Update an Exam
-    @http.route('/api/exams/update/', type='jsonrpc', auth='public', methods=['PUT'], csrf=False)
+    @http.route('/api/exams/update/', type='json', auth='public', methods=['PUT'], csrf=False)
     def update_exam(self, **kwargs):
         """
         Update an existing exam (JWT required)
@@ -122,7 +122,7 @@ class ExamAPI(http.Controller):
             return _error_response(f"Error updating exam: {str(e)}", 500)
 
     ## 🔹 [PUT] Update an Exam
-    @http.route('/api/exams/update_code', type='jsonrpc', auth='public', methods=['PUT'], csrf=False)
+    @http.route('/api/exams/update_code', type='json', auth='public', methods=['PUT'], csrf=False)
     def update_exam_code(self, **kwargs):
         """
         Update an existing exam (JWT required)
@@ -154,7 +154,7 @@ class ExamAPI(http.Controller):
             return _error_response(f"Error updating exam: {str(e)}", 500)
 
     ## 🔹 [PUT] Update an Exam
-    @http.route('/api/exams/update_status', type='jsonrpc', auth='public', methods=['PUT'], csrf=False)
+    @http.route('/api/exams/update_status', type='json', auth='public', methods=['PUT'], csrf=False)
     def update_exam_status(self, **kwargs):
         """
         Update an existing exam (JWT required)

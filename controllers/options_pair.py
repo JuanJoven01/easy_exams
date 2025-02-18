@@ -35,7 +35,7 @@ class QuestionPairAPI(http.Controller):
             return _http_error_response(f"Error retrieving pairs: {str(e)}", 500)
  
     ## 🔹 [POST] Create a New Pair
-    @http.route('/api/exams/questions/pairs/create', type='jsonrpc', auth='public', methods=['POST'], csrf=False)
+    @http.route('/api/exams/questions/pairs/create', type='json', auth='public', methods=['POST'], csrf=False)
     def create_question_pair(self, **kwargs):
         """Create a new question pair (JWT required, user must have access to the exam)"""
         try:
@@ -67,7 +67,7 @@ class QuestionPairAPI(http.Controller):
             return _error_response(f"Error creating pair: {str(e)}", 500)
 
     ## 🔹 [PUT] Update a Question Pair
-    @http.route('/api/exams/question_pairs/update', type='jsonrpc', auth='public', methods=['PUT'], csrf=False)
+    @http.route('/api/exams/question_pairs/update', type='json', auth='public', methods=['PUT'], csrf=False)
     def update_question_pair(self, **kwargs):
         """
         Update an existing question pair (JWT required)

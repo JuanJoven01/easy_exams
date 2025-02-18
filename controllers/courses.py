@@ -39,7 +39,7 @@ class CoursesAPI(http.Controller):
             return _http_error_response(f"Error retrieving courses: {str(e)}", 500)
 
     ## 🔹 [POST] Create a New Course
-    @http.route('/api/exams/courses/create', type='jsonrpc', auth='public', methods=['POST'], csrf=False)
+    @http.route('/api/exams/courses/create', type='json', auth='public', methods=['POST'], csrf=False)
     def create_exam_course(self, **kwargs):
         """
         Creates a new course and assigns the authenticated user to it.
@@ -76,7 +76,7 @@ class CoursesAPI(http.Controller):
 
 
     ## 🔹 [PUT] Update Course
-    @http.route('/api/exams/courses/update/', type='jsonrpc', auth='public', methods=['PUT'], csrf=False)
+    @http.route('/api/exams/courses/update/', type='json', auth='public', methods=['PUT'], csrf=False)
     def update_exam_course(self, **kwargs):
         """
         Updates an existing course if the user has access.

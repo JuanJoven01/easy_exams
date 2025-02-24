@@ -4,7 +4,7 @@ class Question(models.Model):
     _name = 'easy_exams.question'
     _description = 'Question'
 
-    exam_id = fields.Many2one('easy_exams.exam', string="Exam", required=True)
+    exam_id = fields.Many2one('easy_exams.exam', string="Exam", required=True,ondelete='cascade')
     question_type = fields.Selection([
         ('multiple_choice', 'Multiple Choice'),
         ('fill_in_the_blank', 'Fill in the Blank'),

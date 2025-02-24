@@ -28,6 +28,17 @@ class JWTAuth:
         return jwt.encode(payload, JWTAuth.get_secret_key(), algorithm='HS256')
 
     @staticmethod
+    def generate_attempt_token(payload : dict, expiration_time: int):
+        """Generate JWT token for authentication while is takin exam """
+        token_payload = {
+            'student_id': payload['student_id'],
+            'attempt_id': payload['attempt_id'] ,
+            'exam_id': payload['exam_id'] ,
+            'exp': datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(minutes= expiration_time)
+            }
+        return jwt.encode(token_payload, JWTAuth.get_secret_key(), algorithm='HS256')
+
+    @staticmethod
     def decode_token(token):
         """Decode JWT token"""
         try:

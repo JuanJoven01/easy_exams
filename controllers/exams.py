@@ -11,8 +11,8 @@ _logger = logging.getLogger(__name__)
 class ExamAPI(http.Controller):
     
     ## 🔹 [GET] Retrieve Exams by Course
-    @http.route('/api/exams/get', type='http', auth='public', methods=['GET'], csrf=False)
-    def get_exams(self, **kwargs):
+    @http.route('/api/exams/get/<int:course_id>', type='http', auth='public', methods=['GET'], csrf=False)
+    def get_exams(self, course_id):
         """
         Retrieve exams filtered by course_id (JWT required)
         """
@@ -21,7 +21,6 @@ class ExamAPI(http.Controller):
             user_id = user_data.get("user_id")
 
             # Filter exams by course_id if provided
-            course_id = kwargs.get('course_id')
             if not course_id:
                 return _http_error_response('Course id is required')
             
@@ -34,6 +33,7 @@ class ExamAPI(http.Controller):
                 'name': exam.name,
                 'description': exam.description,
                 'course_id': exam.course_id.id,
+                'course_name': exam.course_id.name,
                 'access_code': exam.access_code,
                 'duration': exam.duration,
                 'is_active': exam.is_active
@@ -144,7 +144,7 @@ class ExamAPI(http.Controller):
             }
             exam.sudo().write(update_data)
 
-            return _success_response({'id': exam.id, 'name': exam.name}, "Exam updated successfully")
+            return _success_response({'id': exam.id, 'name': exam.name, 'access_code': access_code}, "Exam updated successfully")
         except ValidationError as e:
             return _error_response(str(e), 400)
         except AccessDenied:
@@ -176,7 +176,7 @@ class ExamAPI(http.Controller):
             }
             exam.sudo().write(update_data)
 
-            return _success_response({'id': exam.id, 'name': exam.name}, "Exam updated successfully")
+            return _success_response({'id': exam.id, 'name': exam.name, 'is_active': exam.is_active}, "Exam updated successfully")
         except ValidationError as e:
             return _error_response(str(e), 400)
         except AccessDenied:

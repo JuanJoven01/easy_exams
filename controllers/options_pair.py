@@ -81,6 +81,9 @@ class QuestionPairAPI(http.Controller):
 
             pair = request.env['easy_exams.question_pair'].sudo().browse(pair_id)
 
+            print('pair.question_id.exam_id.course_id.user_ids' *2)
+            print(pair.question_id.exam_id.course_id.user_ids)
+
             if not pair.exists() or not pair.question_id or not pair.question_id.exam_id or not pair.question_id.exam_id.course_id or user_id not in pair.question_id.exam_id.course_id.user_ids.ids:
                 return _error_response("Unauthorized: Access Denied", 403)
 

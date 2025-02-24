@@ -60,6 +60,10 @@ class ExamAttemptAPI(http.Controller):
             if not exam:
                 return _error_response("Invalid access code or exam not found", 404)
 
+            if exam.is_active == False:
+                return _error_response("The exam is not available", 404)
+                
+
             # Create a new attempt
             new_attempt = request.env['easy_exams.exam_attempt'].sudo().create({
                 'exam_id': exam.id,
@@ -70,7 +74,15 @@ class ExamAttemptAPI(http.Controller):
                 'score': kwargs.get('score', 0),
             })
 
-            return _success_response({'exam_time' : exam.duration  ,'id': new_attempt.id, 'student_name': new_attempt.student_name}, "Exam attempt created successfully.")
+            token_payload = {
+                'student_id': student_id,
+                'attempt_id': new_attempt.id,
+                'exam_id': exam.id
+            }
+
+            jwt = JWTAuth.generate_attempt_token(token_payload, int(exam.duration))
+
+            return _success_response({'exam_time' : exam.duration  ,'id': new_attempt.id, 'student_name': new_attempt.student_name, 'token': jwt }, "Exam attempt created successfully.")
 
         except Exception as e:
             _logger.error(f"Error creating exam attempt: {str(e)}")

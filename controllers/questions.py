@@ -5,6 +5,7 @@ from odoo.exceptions import AccessDenied, ValidationError
 from .auth import JWTAuth
 from ._helpers import _http_success_response, _http_error_response, _error_response, _success_response
 import logging
+import base64
 
 _logger = logging.getLogger(__name__)
 
@@ -36,16 +37,26 @@ class QuestionAPI(http.Controller):
             # Fetch questions for the exam
             questions = request.env['easy_exams.question'].sudo().search([('exam_id', '=', exam_id)])
 
-            question_data = [{
-                'id': q.id,
-                'exam_id': q.exam_id.id,
-                'question_type': q.question_type,
-                'content': q.content,
-                'image': q.image,
-                'correct_answer': q.correct_answer,
-                'options': [{'id': opt.id, 'content': opt.content, 'is_correct': opt.is_correct} for opt in q.option_ids],
-                'pairs': [{'id': pair.id, 'term': pair.term, 'match': pair.match} for pair in q.pair_ids]
-            } for q in questions]
+            question_data = []
+            for q in questions:
+                image = q.image.decode('utf-8') if q.image else None
+                # attachment = request.env['ir.attachment'].sudo().search(
+                #     [('res_id', '=', q.id), ('res_model', '=', 'easy_exams.question')],
+                #     limit=1
+                # )
+                # if attachment:
+                #     print(attachment.mimetype)
+                question_data.append({
+                    'id': q.id,
+                    'exam_id': q.exam_id.id,
+                    'exam_name': q.exam_id.name,
+                    'question_type': q.question_type,
+                    'content': q.content,
+                    'image': image,
+                    'correct_answer': q.correct_answer,
+                    'options': [{'id': opt.id, 'content': opt.content, 'is_correct': opt.is_correct} for opt in q.option_ids],
+                    'pairs': [{'id': pair.id, 'term': pair.term, 'match': pair.match} for pair in q.pair_ids]
+                })
 
             return _http_success_response(question_data, "Questions retrieved successfully")
         except AccessDenied:
@@ -67,9 +78,8 @@ class QuestionAPI(http.Controller):
             # Validate required fields
             exam_id = kwargs.get('exam_id')
             question_type = kwargs.get('question_type')
-            content = kwargs.get('content')
 
-            if not exam_id or not question_type or not content:
+            if not exam_id or not question_type:
                 return _error_response("Missing required fields", 400)
 
             # Check if user has access to the exam
@@ -80,17 +90,33 @@ class QuestionAPI(http.Controller):
 
             if not exam:
                 return _error_response("Exam not found or unauthorized", 400)
+            correct_answer = kwargs.get('correct_answer', '')
+            if question_type == 'fill_in_the_blank':
+                correct_answer = 'ordered'
+
 
             # Create new question
             new_question = request.env['easy_exams.question'].sudo().create({
                 'exam_id': exam.id,
                 'question_type': question_type,
-                'content': content,
+                'content': kwargs.get('content',''),
                 'image': kwargs.get('image') or False,
-                'correct_answer': kwargs.get('correct_answer', ''),
+                'correct_answer': correct_answer,
             })
 
-            return _success_response({'id': new_question.id, 'content': new_question.content}, "Question created successfully")
+            question_data = {
+                'id': new_question.id,
+                'exam_id': new_question.exam_id.id,
+                'exam_name': new_question.exam_id.name,
+                'question_type': new_question.question_type,
+                'content': new_question.content,
+                'image': new_question.image,
+                'correct_answer': new_question.correct_answer,
+                'options': [{'id': opt.id, 'content': opt.content, 'is_correct': opt.is_correct} for opt in new_question.option_ids],
+                'pairs': [{'id': pair.id, 'term': pair.term, 'match': pair.match} for pair in new_question.pair_ids]
+            } 
+
+            return _success_response(question_data, "Question created successfully")
         except ValidationError as e:
             return _error_response(str(e), 400)
         except AccessDenied:
@@ -122,12 +148,24 @@ class QuestionAPI(http.Controller):
             if not question:
                 return _error_response("Question not found or unauthorized", 400)
 
+            new_question_type = kwargs.get('question_type', question.question_type)
+
             update_data = {
-                'question_type': kwargs.get('question_type', question.question_type),
+                'question_type': new_question_type,
                 'content': kwargs.get('content', question.content),
                 'image': kwargs.get('image', question.image),
                 'correct_answer': kwargs.get('correct_answer', question.correct_answer),
             }
+
+            # Check if the question_type has changed
+            
+            if new_question_type != question.question_type:
+                # Delete related options and pairs
+                question.option_ids.unlink()
+                question.pair_ids.unlink()
+                update_data['correct_answer'] = ''
+                if new_question_type == 'fill_in_the_blank':
+                    update_data['correct_answer'] = 'ordered'
 
             question.sudo().write(update_data)
 

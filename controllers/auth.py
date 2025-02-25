@@ -34,7 +34,7 @@ class JWTAuth:
             'student_id': payload['student_id'],
             'attempt_id': payload['attempt_id'] ,
             'exam_id': payload['exam_id'] ,
-            'exp': datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(minutes= expiration_time)
+            'exp': datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(minutes= expiration_time + 1 ) #  1 minute more for backend queries
             }
         return jwt.encode(token_payload, JWTAuth.get_secret_key(), algorithm='HS256')
 
@@ -50,6 +50,25 @@ class JWTAuth:
 
     @staticmethod
     def authenticate_request():
+        """Middleware to verify JWT token in protected endpoints"""
+        token = request.httprequest.headers.get('Authorization')
+
+        if not token:
+            raise AccessDenied("Missing Authorization Header")
+
+        if not token.startswith('Bearer '):
+            raise AccessDenied("Invalid Token Format. Use 'Bearer <token>'")
+
+        token = token.split(' ')[1]  # Extract actual token
+        decoded_token = JWTAuth.decode_token(token)
+
+        if not decoded_token:
+            raise AccessDenied("Invalid or expired token")
+
+        return decoded_token
+
+    @staticmethod
+    def authenticate_attempt():
         """Middleware to verify JWT token in protected endpoints"""
         token = request.httprequest.headers.get('Authorization')
 

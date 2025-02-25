@@ -49,6 +49,45 @@ class QuestionAnswerAPI(http.Controller):
         except Exception as e:
             _logger.error(f"Error retrieving answers: {str(e)}")
             return _http_error_response(f"Error retrieving answers: {str(e)}", 500)
+        
+     ## 🔹 [GET] Retrieve Answers by Attempt
+    @http.route('/api/exams/raw_answers', type='http', auth='public', methods=['GET'], csrf=False)
+    def get_raw_answers(self, **kwargs):
+        """
+        Retrieve war answers filtered by attempt_id while the student is taking the exam.
+        """
+        try:
+            attempt_data = JWTAuth.authenticate_attempt()
+
+            attempt_id = attempt_data['attempt_id']
+
+            if not attempt_id:
+                return _error_response("Attempt ID is required", 400)
+
+            # Find the attempt (to validate access)
+            attempt = request.env['easy_exams.exam_attempt'].sudo().search([('id', '=', attempt_id)], limit=1)
+            if not attempt:
+                return _error_response("Attempt not found", 404)
+
+            # Retrieve answers for the given attempt
+            answers = request.env['easy_exams.question_answer'].sudo().search([('attempt_id', '=', attempt_id)])
+
+            answer_data = [{
+                'id': answer.id,
+                'question': answer.question_id.read(['id', 'content', 'image','question_type'])[0],  # Ensure single dictionary output
+                'selected_options': [{'id': opt.id, 'question_option_id': opt.question_option.id} for opt in answer.selected_option_ids],
+                'pair_selected': [{'id': opt.id, 'question_pair_id': opt.question_pair_id, 'selected_match': opt.selected_match} for opt in answer.answer_pair_ids],
+                'answer_text': answer.answer_text,
+            } for answer in answers]
+
+            return _http_success_response(answer_data, "Answers retrieved successfully")
+        
+        except AccessDenied:
+            return _http_error_response("Unauthorized: Access Denied", 401)
+        
+        except Exception as e:
+            _logger.error(f"Error retrieving answers: {str(e)}")
+            return _http_error_response(f"Error retrieving answers: {str(e)}", 500)
 
 
     ## 🔹 [POST] Create a New Answer

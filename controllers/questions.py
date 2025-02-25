@@ -6,6 +6,7 @@ from .auth import JWTAuth
 from ._helpers import _http_success_response, _http_error_response, _error_response, _success_response
 import logging
 import base64
+import re
 
 _logger = logging.getLogger(__name__)
 
@@ -57,6 +58,88 @@ class QuestionAPI(http.Controller):
                     'options': [{'id': opt.id, 'content': opt.content, 'is_correct': opt.is_correct} for opt in q.option_ids],
                     'pairs': [{'id': pair.id, 'term': pair.term, 'match': pair.match} for pair in q.pair_ids]
                 })
+
+            return _http_success_response(question_data, "Questions retrieved successfully")
+        except AccessDenied:
+            return _http_error_response("Unauthorized: Access Denied", 403)
+        except Exception as e:
+            _logger.error(f"Error retrieving questions: {str(e)}")
+            return _http_error_response(f"Error retrieving questions: {str(e)}", 500)
+
+
+    ## 🔹 [GET] Retrieve Questions by Exam ID
+    @http.route('/api/exams/raw_questions', type='http', auth='public', methods=['GET'], csrf=False)
+    def get_raw_questions(self, **kwargs):
+        """
+        Retrieve questions filtered by exam_id (JWT required)
+        """
+        try:
+            attempt_data = JWTAuth.authenticate_attempt()
+
+            exam_id = attempt_data['exam_id']
+            
+            # Ensure exam_id is provided
+            if not exam_id:
+                return _http_error_response("Missing exam_id on auth", 400)
+
+            # Check if user has access to the exam
+            exam = request.env['easy_exams.exam'].sudo().search([
+                ('id', '=', exam_id)
+            ], limit=1)
+
+            if not exam:
+                return _http_error_response("Exam not found", 404)
+
+            # Fetch questions for the exam
+            questions = request.env['easy_exams.question'].sudo().search([('exam_id', '=', exam_id)])
+
+            question_data = []
+            for q in questions:
+                image = q.image.decode('utf-8') if q.image else None
+                if q.question_type == 'multiple_choice':
+                    options = [{'id': opt.id, 'content': opt.content} for opt in q.option_ids]
+                    options.sort()
+                    question_data.append({
+                    'id': q.id,
+                    'question_type': q.question_type,
+                    'content': q.content,
+                    'image': image,
+                    'options': options
+                })
+                
+                if q.question_type == 'fill_in_the_blank': 
+                    
+                    regex = r'\{\{.*?\}\}'
+                    content = re.sub(regex, '{{}}', q.content)
+                    question_data.append({
+                    'id': q.id,
+                    'question_type': q.question_type,
+                    'content': content,
+                    'image': image,
+                })
+                if q.question_type == 'short_answer' or q.question_type == 'long_answer':
+                    question_data.append({
+                    'id': q.id,
+                    'question_type': q.question_type,
+                    'content': q.content,
+                    'image': image,
+                    })
+                if q.question_type == 'matching': # QAP modify the pairs
+                    pairs = []
+                    matches = []
+                    for pair in q.pair_ids:
+                        pairs.append({'id': pair.id, 'term': pair.term})
+                        matches.append(pair.match)
+                    matches.sort()
+                    question_data.append({
+                    'id': q.id,
+                    'question_type': q.question_type,
+                    'content': q.content,
+                    'image': image,
+                    'pairs': pairs,
+                    'matches' : matches
+                    })
+            question_data.sort()
 
             return _http_success_response(question_data, "Questions retrieved successfully")
         except AccessDenied:

@@ -82,7 +82,7 @@ class ExamAttemptAPI(http.Controller):
 
             jwt = JWTAuth.generate_attempt_token(token_payload, int(exam.duration))
 
-            return _success_response({'exam_time' : exam.duration  ,'id': new_attempt.id, 'student_name': new_attempt.student_name, 'token': jwt }, "Exam attempt created successfully.")
+            return _success_response({'exam_time' : exam.duration  ,'id': new_attempt.id, 'student_name': new_attempt.student_name, 'token': jwt, 'start_time': new_attempt.tart_time }, "Exam attempt created successfully.")
 
         except Exception as e:
             _logger.error(f"Error creating exam attempt: {str(e)}")

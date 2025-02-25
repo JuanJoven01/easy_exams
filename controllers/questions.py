@@ -7,6 +7,7 @@ from ._helpers import _http_success_response, _http_error_response, _error_respo
 import logging
 import base64
 import re
+import random
 
 _logger = logging.getLogger(__name__)
 
@@ -75,40 +76,33 @@ class QuestionAPI(http.Controller):
         """
         try:
             attempt_data = JWTAuth.authenticate_attempt()
-
             exam_id = attempt_data['exam_id']
-            
             # Ensure exam_id is provided
             if not exam_id:
                 return _http_error_response("Missing exam_id on auth", 400)
-
             # Check if user has access to the exam
             exam = request.env['easy_exams.exam'].sudo().search([
                 ('id', '=', exam_id)
             ], limit=1)
-
             if not exam:
                 return _http_error_response("Exam not found", 404)
-
             # Fetch questions for the exam
             questions = request.env['easy_exams.question'].sudo().search([('exam_id', '=', exam_id)])
-
             question_data = []
             for q in questions:
                 image = q.image.decode('utf-8') if q.image else None
                 if q.question_type == 'multiple_choice':
                     options = [{'id': opt.id, 'content': opt.content} for opt in q.option_ids]
-                    options.sort()
+                    random.shuffle(options)
                     question_data.append({
-                    'id': q.id,
-                    'question_type': q.question_type,
-                    'content': q.content,
-                    'image': image,
-                    'options': options
-                })
+                        'id': q.id,
+                        'question_type': q.question_type,
+                        'content': q.content,
+                        'image': image,
+                        'options': options
+                    })
                 
                 if q.question_type == 'fill_in_the_blank': 
-                    
                     regex = r'\{\{.*?\}\}'
                     content = re.sub(regex, '{{}}', q.content)
                     question_data.append({
@@ -119,10 +113,10 @@ class QuestionAPI(http.Controller):
                 })
                 if q.question_type == 'short_answer' or q.question_type == 'long_answer':
                     question_data.append({
-                    'id': q.id,
-                    'question_type': q.question_type,
-                    'content': q.content,
-                    'image': image,
+                        'id': q.id,
+                        'question_type': q.question_type,
+                        'content': q.content,
+                        'image': image,
                     })
                 if q.question_type == 'matching': # QAP modify the pairs
                     pairs = []
@@ -130,16 +124,17 @@ class QuestionAPI(http.Controller):
                     for pair in q.pair_ids:
                         pairs.append({'id': pair.id, 'term': pair.term})
                         matches.append(pair.match)
-                    matches.sort()
+                    random.shuffle(matches)
                     question_data.append({
-                    'id': q.id,
-                    'question_type': q.question_type,
-                    'content': q.content,
-                    'image': image,
-                    'pairs': pairs,
-                    'matches' : matches
+                        'id': q.id,
+                        'question_type': q.question_type,
+                        'content': q.content,
+                        'image': image,
+                        'pairs': pairs,
+                        'matches' : matches
                     })
-            question_data.sort()
+                    
+            random.shuffle(question_data)
 
             return _http_success_response(question_data, "Questions retrieved successfully")
         except AccessDenied:

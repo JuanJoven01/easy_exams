@@ -50,7 +50,7 @@ class QuestionAnswerAPI(http.Controller):
             _logger.error(f"Error retrieving answers: {str(e)}")
             return _http_error_response(f"Error retrieving answers: {str(e)}", 500)
         
-     ## 🔹 [GET] Retrieve Answers by Attempt
+     ## 🔹 [GET] Retrieve Raw Answers by Attempt
     @http.route('/api/exams/raw_answers', type='http', auth='public', methods=['GET'], csrf=False)
     def get_raw_answers(self, **kwargs):
         """
@@ -71,16 +71,16 @@ class QuestionAnswerAPI(http.Controller):
 
             # Retrieve answers for the given attempt
             answers = request.env['easy_exams.question_answer'].sudo().search([('attempt_id', '=', attempt_id)])
-
+            print(answers.read())
             answer_data = [{
                 'id': answer.id,
-                'question': answer.question_id.read(['id', 'content', 'image','question_type'])[0],  # Ensure single dictionary output
+                'question_id': answer.question_id.id,
                 'selected_options': [{'id': opt.id, 'question_option_id': opt.question_option.id} for opt in answer.selected_option_ids],
-                'pair_selected': [{'id': opt.id, 'question_pair_id': opt.question_pair_id, 'selected_match': opt.selected_match} for opt in answer.answer_pair_ids],
+                'pair_selected': [{'id': opt.id, 'question_pair_id': opt.question_pair_id.id, 'selected_match': opt.selected_match} for opt in answer.answer_pair_ids],
                 'answer_text': answer.answer_text,
             } for answer in answers]
-
-            return _http_success_response(answer_data, "Answers retrieved successfully")
+            print(answers.read())
+            return _http_success_response(answer_data, "Answers (cleaned) retrieved successfully")
         
         except AccessDenied:
             return _http_error_response("Unauthorized: Access Denied", 401)
@@ -97,11 +97,15 @@ class QuestionAnswerAPI(http.Controller):
         Create a new answer for a question.
         """
         try:
-            attempt_id = kwargs.get('attempt_id')
+            attempt_data = JWTAuth.authenticate_attempt()
+            attempt_id = attempt_data['attempt_id']
+
             question_id = kwargs.get('question_id')
 
             selected_options = kwargs.get('selected_options')
             selected_pairs = kwargs.get('selected_pairs')
+
+            answer_text = kwargs.get('answer_text', '')
 
             if not attempt_id or not question_id:
                 return _error_response("Attempt ID and Question ID are required", 400)
@@ -109,25 +113,40 @@ class QuestionAnswerAPI(http.Controller):
             answer_data = {
                 'attempt_id': attempt_id,
                 'question_id': question_id,
-                'answer_text': kwargs.get('answer_text', ''),
+                'answer_text': answer_text,
             }
 
             new_answer = request.env['easy_exams.question_answer'].sudo().create(answer_data)
-
+            
             if selected_options:
-                [request.env['easy_exams.answer_option'].sudo.create({
+                [request.env['easy_exams.answer_option'].sudo().create({
                     'question_option' : selected_option,
                     'answer_id' : new_answer.id
                 }) for selected_option in selected_options]
 
+            selected_option_id = 0
+            if new_answer.selected_option_ids:
+                selected_option_id = new_answer.selected_option_ids[0].question_option.id
+
             if selected_pairs:
-                [request.env['easy_exams.question_answer_pair'].sudo.create({
+                [request.env['easy_exams.question_answer_pair'].sudo().create({
                     'answer_id' : new_answer.id,
                     'question_pair_id' : selected_pair['question_pair_id'],
                     'selected_match' : selected_pair['selected_match'],
                 }) for selected_pair in selected_pairs]
 
-            return _success_response({'id': new_answer.id}, "Answer recorded successfully")
+            selected_pairs_return = []
+            if new_answer.answer_pair_ids:
+                for pair in new_answer.answer_pair_ids:
+                    selected_pairs_return.append({
+                        'question_pair_id': pair.question_pair_id.id,
+                        'selected_match': pair.selected_match
+                    })
+
+            return _success_response({'id': new_answer.id, 'question_id':question_id, 'answer_text':  answer_text, 'selected_option_id': selected_option_id  , 'selected_pairs': selected_pairs_return }, "Answer recorded successfully")
+        
+        except AccessDenied:
+            return _http_error_response("Unauthorized: Access Denied", 401)
         except ValidationError as e:
             return _error_response(str(e), 400)
         except Exception as e:
@@ -141,6 +160,11 @@ class QuestionAnswerAPI(http.Controller):
         Update an existing answer.
         """
         try:
+
+            attempt_data = JWTAuth.authenticate_attempt()
+
+            attempt_id = attempt_data['attempt_id']
+
             answer_id = kwargs.get('answer_id') 
             selected_options = kwargs.get('selected_options') #receives an list of ids
             selected_pairs = kwargs.get('selected_pairs')
@@ -163,7 +187,8 @@ class QuestionAnswerAPI(http.Controller):
                     })
                     for selected_option in selected_options]
                 answer.write({'selected_option_ids': new_options})
-
+            
+            
             if selected_pairs:
 
                 answer.answer_pair_ids.unlink()
@@ -177,7 +202,7 @@ class QuestionAnswerAPI(http.Controller):
                     })
                     for selected_pair in selected_pairs]
 
-            answer.write({'answer_pair_ids': new_pairs})
+                answer.write({'answer_pair_ids': new_pairs})
 
             update_data = {
                 'answer_text': kwargs.get('answer_text', answer.answer_text),
@@ -185,6 +210,9 @@ class QuestionAnswerAPI(http.Controller):
             answer.sudo().write(update_data)
 
             return _success_response({'id': answer.id}, "Answer updated successfully")
+
+        except AccessDenied:
+            return _http_error_response("Unauthorized: Access Denied", 401)
         except Exception as e:
             _logger.error(f"Error updating answer: {str(e)}")
             return _error_response(f"Error updating answer: {str(e)}", 500)

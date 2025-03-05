@@ -9,4 +9,5 @@ class QuestionAnswer(models.Model):
     selected_option_ids = fields.One2many('easy_exams.answer_option', 'answer_id',  string="Selected Options")
     answer_text = fields.Text(string="Answer Text")
     is_correct = fields.Boolean(string="Is Correct")
+    q_score = fields.Float(string="Score between 0 and 1")
     answer_pair_ids = fields.One2many('easy_exams.question_answer_pair', 'answer_id', string="Answer Pairs")

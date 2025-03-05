@@ -34,7 +34,7 @@ class JWTAuth:
             'student_id': payload['student_id'],
             'attempt_id': payload['attempt_id'] ,
             'exam_id': payload['exam_id'] ,
-            'exp': datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(minutes= expiration_time + 1 ) #  1 minute more for backend queries
+            'exp': datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(minutes= (expiration_time + 1) ) #  1 minute more for backend queries
             }
         return jwt.encode(token_payload, JWTAuth.get_secret_key(), algorithm='HS256')
 
@@ -44,9 +44,9 @@ class JWTAuth:
         try:
             return jwt.decode(token, JWTAuth.get_secret_key(), algorithms=['HS256'])
         except jwt.ExpiredSignatureError:
-            return None
+            raise AccessDenied("Expired Token")
         except jwt.InvalidTokenError:
-            return None
+            raise AccessDenied("Invalid Token")
 
     @staticmethod
     def authenticate_request():

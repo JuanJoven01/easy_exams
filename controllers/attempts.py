@@ -14,24 +14,35 @@ class ExamAttemptAPI(http.Controller):
     @http.route('/api/exams/attempts/get/<int:exam_id>', type='http', auth='public', methods=['GET'], csrf=False)
     def get_exam_attempts(self, exam_id, **kwargs):
         """
-        Retrieve exam attempts, optionally filtered by exam_id (JWT required)
+        Retrieve exam attempts, optionally filtered by exam_id and date range (JWT required)
         """
         try:
             user_data = JWTAuth.authenticate_request()
             user_id = user_data.get("user_id")
-            domain = [('exam_id.course_id.user_ids', 'in', user_id),('exam_id', '=', int(exam_id))]
+
+            domain = [('exam_id.course_id.user_ids', 'in', user_id), ('exam_id', '=', exam_id)]
+
+            start_date = kwargs.get('start_date')
+            end_date = kwargs.get('end_date')
+
+            if start_date:
+                domain.append(('start_time', '>=', start_date))
+            if end_date:
+                domain.append(('start_time', '<=', end_date))
 
             attempts = request.env['easy_exams.exam_attempt'].sudo().search(domain)
 
-            return _http_success_response([{
+            attempts_data = [{
                 'id': attempt.id,
                 'exam_id': attempt.exam_id.id,
                 'student_name': attempt.student_name,
                 'student_id': attempt.student_id,
-                'start_time': attempt.start_time,
-                'end_time': attempt.end_time,
+                'start_time': attempt.start_time.isoformat() if attempt.start_time else None,
+                'end_time': attempt.end_time.isoformat() if attempt.end_time else None,
                 'score': attempt.score
-            } for attempt in attempts], "Exam attempts retrieved successfully.")
+            } for attempt in attempts]
+
+            return _http_success_response(attempts_data, "Exam attempts retrieved successfully.")
 
         except AccessDenied:
             return _http_error_response("Unauthorized: Access Denied", 401)
@@ -39,6 +50,84 @@ class ExamAttemptAPI(http.Controller):
             _logger.error(f"Error retrieving exam attempts: {str(e)}")
             return _http_error_response(f"Error retrieving exam attempts: {str(e)}", 500)
 
+    ## 🔹 [GET] Retrieve Exam Attempts (Filtered by Exam ID)
+    @http.route('/api/exams/attempts/get_full/<int:exam_id>', type='http', auth='public', methods=['GET'], csrf=False)
+    def get_exam_attempts_data(self, exam_id, **kwargs):
+        """
+        Retrieve exam attempts, optionally filtered by exam_id and date range (JWT required)
+        """
+        try:
+            user_data = JWTAuth.authenticate_request()
+            user_id = user_data.get("user_id")
+
+            domain = [('exam_id.course_id.user_ids', 'in', user_id), ('exam_id', '=', exam_id)]
+
+            start_date = kwargs.get('start_date')
+            end_date = kwargs.get('end_date')
+
+            if start_date:
+                domain.append(('start_time', '>=', start_date))
+            if end_date:
+                domain.append(('start_time', '<=', end_date))
+
+            attempts = request.env['easy_exams.exam_attempt'].sudo().search(domain)
+
+            attempts_data = [{
+                'id': attempt.id,
+                'exam_id': attempt.exam_id.id,
+                'student_name': attempt.student_name,
+                'student_id': attempt.student_id,
+                'start_time': attempt.start_time.isoformat() if attempt.start_time else None,
+                'end_time': attempt.end_time.isoformat() if attempt.end_time else None,
+                'score': attempt.score,
+                'answer_ids': [{
+                        'question': {
+                            'id' : ans.question_id.id,
+                            'question_type': ans.question_id.question_type,
+                            'content': ans.question_id.content,
+                            'image': ans.question_id.image.decode('utf-8') if ans.question_id.image else None,
+                            'correct_answer': ans.question_id.correct_answer,
+                            'options' : [{
+                                    'id' : opt.id,
+                                    'content' : opt.content,
+                                    'is_correct' : opt.is_correct,
+                                }for opt in ans.question_id.option_ids],
+                            'pairs': [{
+                                    'id' : pair.id,
+                                    'term' : pair.term,
+                                    'match' : pair.match,
+                                } for pair in ans.question_id.pair_ids],
+                         },
+                        'selected_options': [{
+                                'id': opt.id,
+                                'option_id': opt.question_option.id,
+                                'option_content': opt.question_option.content,
+                                'is_correct': opt.question_option.is_correct,
+                            }for opt in ans.selected_option_ids],
+                        'answer_pairs': [{
+                            'id': pair.id,
+                            'question_pair_id': pair.question_pair_id.id,
+                            'question_pair_term': pair.question_pair_id.term,
+                            'question_pair_match': pair.question_pair_id.match,
+                            'selected_match': pair.selected_match
+                        }for pair in ans.answer_pair_ids],
+                        'answer_text' : ans.answer_text,
+                        'is_correct': ans.is_correct,
+                        'q_score': ans.q_score
+                        
+                    } for ans in attempt.answer_ids],
+                
+
+            } for attempt in attempts]
+
+            return _http_success_response(attempts_data, "Exam attempts retrieved successfully.")
+
+        except AccessDenied:
+            return _http_error_response("Unauthorized: Access Denied", 401)
+        except Exception as e:
+            _logger.error(f"Error retrieving exam attempts: {str(e)}")
+            return _http_error_response(f"Error retrieving exam attempts: {str(e)}", 500)
+        
     ## 🔹 [POST] Create a New Exam Attempt
     @http.route('/api/exams/attempts/create', type='json', auth='public', methods=['POST'], csrf=False)
     def create_exam_attempt(self, **kwargs):
@@ -129,7 +218,10 @@ class ExamAttemptAPI(http.Controller):
         Update an existing exam attempt (JWT required)
         """
         try:
-            attempt_id = kwargs.get('attempt_id')
+
+            attempt_data = JWTAuth.authenticate_attempt()
+
+            attempt_id = attempt_data['attempt_id']
             if not attempt_id:
                 return _error_response('Attempt id is required')
             

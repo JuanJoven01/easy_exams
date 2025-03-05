@@ -61,8 +61,8 @@ class QuestionAPI(http.Controller):
                 })
 
             return _http_success_response(question_data, "Questions retrieved successfully")
-        except AccessDenied:
-            return _http_error_response("Unauthorized: Access Denied", 403)
+        except AccessDenied as e:
+            return _http_error_response(str(e), 403)
         except Exception as e:
             _logger.error(f"Error retrieving questions: {str(e)}")
             return _http_error_response(f"Error retrieving questions: {str(e)}", 500)
@@ -136,9 +136,9 @@ class QuestionAPI(http.Controller):
                     
             random.shuffle(question_data)
 
-            return _http_success_response(question_data, "Questions retrieved successfully")
-        except AccessDenied:
-            return _http_error_response("Unauthorized: Access Denied", 403)
+            return _http_success_response(question_data, "Questions (cleaned) retrieved successfully")
+        except AccessDenied as e:
+            return _http_error_response(str(e), 403)
         except Exception as e:
             _logger.error(f"Error retrieving questions: {str(e)}")
             return _http_error_response(f"Error retrieving questions: {str(e)}", 500)

@@ -11,7 +11,7 @@ _logger = logging.getLogger(__name__)
 class ExamAttemptAPI(http.Controller):
 
     ## 🔹 [GET] Retrieve Exam Attempts (Filtered by Exam ID)
-    @http.route('/api/exams/attempts/get/<int:exam_id>', type='http', auth='public', methods=['GET'], csrf=False)
+    @http.route('/api/exams/attempts/get/<int:exam_id>', type='http', auth='public', methods=['GET'], csrf=False, cors='*')
     def get_exam_attempts(self, exam_id, **kwargs):
         """
         Retrieve exam attempts, optionally filtered by exam_id and date range (JWT required)
@@ -51,7 +51,7 @@ class ExamAttemptAPI(http.Controller):
             return _http_error_response(f"Error retrieving exam attempts: {str(e)}", 500)
 
     ## 🔹 [GET] Retrieve Exam Attempts (Filtered by Exam ID)
-    @http.route('/api/exams/attempts/get_full/<int:exam_id>', type='http', auth='public', methods=['GET'], csrf=False)
+    @http.route('/api/exams/attempts/get_full/<int:exam_id>', type='http', auth='public', methods=['GET'], csrf=False, cors="*")
     def get_exam_attempts_data(self, exam_id, **kwargs):
         """
         Retrieve exam attempts, optionally filtered by exam_id and date range (JWT required)
@@ -116,8 +116,6 @@ class ExamAttemptAPI(http.Controller):
                         'q_score': ans.q_score
                         
                     } for ans in attempt.answer_ids],
-                
-
             } for attempt in attempts]
 
             return _http_success_response(attempts_data, "Exam attempts retrieved successfully.")
@@ -129,7 +127,7 @@ class ExamAttemptAPI(http.Controller):
             return _http_error_response(f"Error retrieving exam attempts: {str(e)}", 500)
         
     ## 🔹 [POST] Create a New Exam Attempt
-    @http.route('/api/exams/attempts/create', type='json', auth='public', methods=['POST'], csrf=False)
+    @http.route('/api/exams/attempts/create', type='json', auth='public', methods=['POST'], csrf=False, cors="*")
     def create_exam_attempt(self, **kwargs):
         """
         Create a new exam attempt (Public - No JWT Required)
@@ -179,7 +177,7 @@ class ExamAttemptAPI(http.Controller):
 
 
     ## 🔹 [PUT] Update an Exam Attempt
-    @http.route('/api/exams/attempts/update', type='json', auth='public', methods=['PUT'], csrf=False)
+    @http.route('/api/exams/attempts/update', type='json', auth='public', methods=['PUT'], csrf=False, cors="*")
     def update_exam_attempt(self, **kwargs):
         """
         Update an existing exam attempt (JWT required)
@@ -212,7 +210,7 @@ class ExamAttemptAPI(http.Controller):
             return _error_response(f"Error updating exam attempt: {str(e)}", 500)
 
     ## 🔹 [PUT] Update an Exam Attempt finished
-    @http.route('/api/exams/attempts/update/finished', type='json', auth='public', methods=['PUT'], csrf=False)
+    @http.route('/api/exams/attempts/update/finished', type='json', auth='public', methods=['PUT'], csrf=False, cors="*")
     def update_exam_attempt_finished(self, **kwargs):
         """
         Update an existing exam attempt (JWT required)
@@ -241,7 +239,7 @@ class ExamAttemptAPI(http.Controller):
             return _error_response(f"Error updating exam attempt: {str(e)}", 500)
 
     ## 🔹 [DELETE] Delete an Exam Attempt
-    @http.route('/api/exams/attempts/delete/<int:attempt_id>', type='http', auth='public', methods=['DELETE'], csrf=False)
+    @http.route('/api/exams/attempts/delete/<int:attempt_id>', type='http', auth='public', methods=['DELETE'], csrf=False, cors="*")
     def delete_exam_attempt(self, attempt_id, **kwargs):
         """
         Delete an exam attempt (JWT required)

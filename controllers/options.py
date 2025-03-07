@@ -11,7 +11,7 @@ _logger = logging.getLogger(__name__)
 
 class QuestionOptionAPI(http.Controller):
     ## 🔹 [GET] Retrieve Options for a Question
-    @http.route('/api/exams/questions/options/<int:question_id>', type='http', auth='public', methods=['GET'], csrf=False)
+    @http.route('/api/exams/questions/options/<int:question_id>', type='http', auth='public', methods=['GET'], csrf=False, cors="*")
     def get_question_options(self, question_id, **kwargs):
         """Retrieve all options for a given question (JWT required, user must have access to the exam)"""
         try:
@@ -37,7 +37,7 @@ class QuestionOptionAPI(http.Controller):
             return _http_error_response(f"Error retrieving options: {str(e)}", 500)
 
     ## 🔹 [POST] Create a New Option
-    @http.route('/api/exams/questions/options/create', type='json', auth='public', methods=['POST'], csrf=False)
+    @http.route('/api/exams/questions/options/create', type='json', auth='public', methods=['POST'], csrf=False, cors="*")
     def create_question_option(self, **kwargs):
         """Create a new question option (JWT required, user must have access to the exam)"""
         try:
@@ -69,7 +69,7 @@ class QuestionOptionAPI(http.Controller):
             return _error_response(f"Error creating option: {str(e)}", 500)
         
     ## 🔹 [PUT] Update a Question Option
-    @http.route('/api/exams/question_options/update', type='json', auth='public', methods=['PUT'], csrf=False)
+    @http.route('/api/exams/question_options/update', type='json', auth='public', methods=['PUT'], csrf=False, cors="*")
     def update_question_option(self, **kwargs):
         """
         Update an existing question option (JWT required)
@@ -101,7 +101,7 @@ class QuestionOptionAPI(http.Controller):
             return _error_response(f"Error updating option: {str(e)}", 500)
     
     ## 🔹 [DELETE] Delete an Option
-    @http.route('/api/exams/questions/options/delete/<int:option_id>', type='http', auth='public', methods=['DELETE'], csrf=False)
+    @http.route('/api/exams/questions/options/delete/<int:option_id>', type='http', auth='public', methods=['DELETE'], csrf=False, cors="*")
     def delete_question_option(self, option_id, **kwargs):
         """Delete a question option (JWT required, user must have access to the exam)"""
         try:

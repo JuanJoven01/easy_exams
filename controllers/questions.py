@@ -14,7 +14,7 @@ _logger = logging.getLogger(__name__)
 class QuestionAPI(http.Controller):
 
     ## 🔹 [GET] Retrieve Questions by Exam ID
-    @http.route('/api/exams/questions/<int:exam_id>', type='http', auth='public', methods=['GET'], csrf=False)
+    @http.route('/api/exams/questions/<int:exam_id>', type='http', auth='public', methods=['GET'], csrf=False, cors="*")
     def get_questions(self, exam_id, **kwargs):
         """
         Retrieve questions filtered by exam_id (JWT required)
@@ -69,7 +69,7 @@ class QuestionAPI(http.Controller):
 
 
     ## 🔹 [GET] Retrieve Questions by Exam ID
-    @http.route('/api/exams/raw_questions', type='http', auth='public', methods=['GET'], csrf=False)
+    @http.route('/api/exams/raw_questions', type='http', auth='public', methods=['GET'], csrf=False, cors="*")
     def get_raw_questions(self, **kwargs):
         """
         Retrieve questions filtered by exam_id (JWT required)
@@ -144,7 +144,7 @@ class QuestionAPI(http.Controller):
             return _http_error_response(f"Error retrieving questions: {str(e)}", 500)
 
     ## 🔹 [POST] Create a New Question
-    @http.route('/api/exams/questions/create', type='json', auth='public', methods=['POST'], csrf=False)
+    @http.route('/api/exams/questions/create', type='json', auth='public', methods=['POST'], csrf=False, cors="*")
     def create_question(self, **kwargs):
         """
         Create a new question under an authorized exam (JWT required)
@@ -204,7 +204,7 @@ class QuestionAPI(http.Controller):
             return _error_response(f"Error creating question: {str(e)}", 500)
 
     ## 🔹 [PUT] Update a Question
-    @http.route('/api/exams/questions/update', type='json', auth='public', methods=['PUT'], csrf=False)
+    @http.route('/api/exams/questions/update', type='json', auth='public', methods=['PUT'], csrf=False, cors="*")
     def update_question(self, **kwargs):
         """
         Update an existing question (JWT required)
@@ -257,7 +257,7 @@ class QuestionAPI(http.Controller):
             return _error_response(f"Error updating question: {str(e)}", 500)
 
     ## 🔹 [DELETE] Delete a Question
-    @http.route('/api/exams/questions/delete/<int:question_id>', type='http', auth='public', methods=['DELETE'], csrf=False)
+    @http.route('/api/exams/questions/delete/<int:question_id>', type='http', auth='public', methods=['DELETE'], csrf=False, cors="*")
     def delete_question(self, question_id, **kwargs):
         """
         Delete a question (JWT required)

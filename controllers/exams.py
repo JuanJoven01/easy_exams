@@ -11,7 +11,7 @@ _logger = logging.getLogger(__name__)
 class ExamAPI(http.Controller):
     
     ## 🔹 [GET] Retrieve Exams by Course
-    @http.route('/api/exams/get/<int:course_id>', type='http', auth='public', methods=['GET'], csrf=False)
+    @http.route('/api/exams/get/<int:course_id>', type='http', auth='public', methods=['GET'], csrf=False, cors="*")
     def get_exams(self, course_id):
         """
         Retrieve exams filtered by course_id (JWT required)
@@ -47,7 +47,7 @@ class ExamAPI(http.Controller):
             return _http_error_response(f"Error retrieving exams: {str(e)}", 500)
 
     ## 🔹 [POST] Create a New Exam
-    @http.route('/api/exams/create', type='json', auth='public', methods=['POST'], csrf=False)
+    @http.route('/api/exams/create', type='json', auth='public', methods=['POST'], csrf=False, cors="*")
     def create_exam(self, **kwargs):
         """
         Create a new exam under an authorized course (JWT required)
@@ -89,7 +89,7 @@ class ExamAPI(http.Controller):
             return _error_response(f"Error creating exam: {str(e)}", 500)
 
     ## 🔹 [PUT] Update an Exam
-    @http.route('/api/exams/update/', type='json', auth='public', methods=['PUT'], csrf=False)
+    @http.route('/api/exams/update/', type='json', auth='public', methods=['PUT'], csrf=False, cors="*")
     def update_exam(self, **kwargs):
         """
         Update an existing exam (JWT required)
@@ -122,7 +122,7 @@ class ExamAPI(http.Controller):
             return _error_response(f"Error updating exam: {str(e)}", 500)
 
     ## 🔹 [PUT] Update an Exam
-    @http.route('/api/exams/update_code', type='json', auth='public', methods=['PUT'], csrf=False)
+    @http.route('/api/exams/update_code', type='json', auth='public', methods=['PUT'], csrf=False, cors="*")
     def update_exam_code(self, **kwargs):
         """
         Update an existing exam (JWT required)
@@ -154,7 +154,7 @@ class ExamAPI(http.Controller):
             return _error_response(f"Error updating exam: {str(e)}", 500)
 
     ## 🔹 [PUT] Update an Exam
-    @http.route('/api/exams/update_status', type='json', auth='public', methods=['PUT'], csrf=False)
+    @http.route('/api/exams/update_status', type='json', auth='public', methods=['PUT'], csrf=False, cors="*")
     def update_exam_status(self, **kwargs):
         """
         Update an existing exam (JWT required)
@@ -186,7 +186,7 @@ class ExamAPI(http.Controller):
             return _error_response(f"Error updating exam: {str(e)}", 500)
         
     ## 🔹 [DELETE] Delete an Exam
-    @http.route('/api/exams/delete/<int:exam_id>', type='http', auth='public', methods=['DELETE'], csrf=False)
+    @http.route('/api/exams/delete/<int:exam_id>', type='http', auth='public', methods=['DELETE'], csrf=False, cors="*")
     def delete_exam(self, exam_id, **kwargs):
         """
         Delete an exam (JWT required)

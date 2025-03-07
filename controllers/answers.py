@@ -11,7 +11,7 @@ _logger = logging.getLogger(__name__)
 class QuestionAnswerAPI(http.Controller):
     
     ## 🔹 [GET] Retrieve Answers by Attempt
-    @http.route('/api/exams/answers/get/<int:attempt_id>', type='http', auth='public', methods=['GET'], csrf=False)
+    @http.route('/api/exams/answers/get/<int:attempt_id>', type='http', auth='public', methods=['GET'], csrf=False, cors="*")
     def get_answers(self, attempt_id, **kwargs):
         """
         Retrieve answers filtered by attempt_id.
@@ -51,7 +51,7 @@ class QuestionAnswerAPI(http.Controller):
             return _http_error_response(f"Error retrieving answers: {str(e)}", 500)
         
      ## 🔹 [GET] Retrieve Raw Answers by Attempt
-    @http.route('/api/exams/raw_answers', type='http', auth='public', methods=['GET'], csrf=False)
+    @http.route('/api/exams/raw_answers', type='http', auth='public', methods=['GET'], csrf=False, cors="*")
     def get_raw_answers(self, **kwargs):
         """
         Retrieve war answers filtered by attempt_id while the student is taking the exam.
@@ -91,7 +91,7 @@ class QuestionAnswerAPI(http.Controller):
 
 
     ## 🔹 [POST] Create a New Answer
-    @http.route('/api/exams/answers/create', type='json', auth='public', methods=['POST'], csrf=False)
+    @http.route('/api/exams/answers/create', type='json', auth='public', methods=['POST'], csrf=False, cors="*")
     def create_answer(self, **kwargs):
         """
         Create a new answer for a question.
@@ -154,7 +154,7 @@ class QuestionAnswerAPI(http.Controller):
             return _error_response(f"Error creating answer: {str(e)}", 500)
 
     ## 🔹 [PUT] Update an Answer
-    @http.route('/api/exams/answers/update', type='json', auth='public', methods=['PUT'], csrf=False)
+    @http.route('/api/exams/answers/update', type='json', auth='public', methods=['PUT'], csrf=False, cors="*")
     def update_answer(self, **kwargs):
         """
         Update an existing answer.
@@ -218,7 +218,7 @@ class QuestionAnswerAPI(http.Controller):
             return _error_response(f"Error updating answer: {str(e)}", 500)
 
     ## 🔹 [DELETE] Delete an Answer
-    @http.route('/api/exams/answers/delete/<int:answer_id>', type='http', auth='public', methods=['DELETE'], csrf=False)
+    @http.route('/api/exams/answers/delete/<int:answer_id>', type='http', auth='public', methods=['DELETE'], csrf=False, cors="*")
     def delete_answer(self, answer_id, **kwargs):
         """
         Delete an answer.

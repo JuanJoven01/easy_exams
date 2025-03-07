@@ -12,7 +12,7 @@ _logger = logging.getLogger(__name__)
 class QuestionPairAPI(http.Controller):
 
     ## 🔹 [GET] Retrieve Pairs for a Question
-    @http.route('/api/exams/questions/pairs/<int:question_id>', type='http', auth='public', methods=['GET'], csrf=False)
+    @http.route('/api/exams/questions/pairs/<int:question_id>', type='http', auth='public', methods=['GET'], csrf=False, cors="*")
     def get_question_pairs(self, question_id, **kwargs):
         """Retrieve all pairs for a given question (JWT required, user must have access to the exam)"""
         try:
@@ -35,7 +35,7 @@ class QuestionPairAPI(http.Controller):
             return _http_error_response(f"Error retrieving pairs: {str(e)}", 500)
  
     ## 🔹 [POST] Create a New Pair
-    @http.route('/api/exams/questions/pairs/create', type='json', auth='public', methods=['POST'], csrf=False)
+    @http.route('/api/exams/questions/pairs/create', type='json', auth='public', methods=['POST'], csrf=False, cors="*")
     def create_question_pair(self, **kwargs):
         """Create a new question pair (JWT required, user must have access to the exam)"""
         try:
@@ -67,7 +67,7 @@ class QuestionPairAPI(http.Controller):
             return _error_response(f"Error creating pair: {str(e)}", 500)
 
     ## 🔹 [PUT] Update a Question Pair
-    @http.route('/api/exams/question_pairs/update', type='json', auth='public', methods=['PUT'], csrf=False)
+    @http.route('/api/exams/question_pairs/update', type='json', auth='public', methods=['PUT'], csrf=False, cors="*")
     def update_question_pair(self, **kwargs):
         """
         Update an existing question pair (JWT required)
@@ -101,7 +101,7 @@ class QuestionPairAPI(http.Controller):
             return _error_response(f"Error updating pair: {str(e)}", 500)
         
     ## 🔹 [DELETE] Delete a Pair
-    @http.route('/api/exams/questions/pairs/delete/<int:pair_id>', type='http', auth='public', methods=['DELETE'], csrf=False)
+    @http.route('/api/exams/questions/pairs/delete/<int:pair_id>', type='http', auth='public', methods=['DELETE'], csrf=False, cors="*")
     def delete_question_pair(self, pair_id, **kwargs):
         """Delete a question pair (JWT required, user must have access to the exam)"""
         try:

@@ -10,7 +10,7 @@ _logger = logging.getLogger(__name__)
 
 class CoursesAPI(http.Controller):
     ## 🔹 [GET] Retrieve Courses for Authenticated User
-    @http.route('/api/exams/courses/get', type='http', auth='public', methods=['GET'], csrf=False)
+    @http.route('/api/exams/courses/get', type='http', auth='public', methods=['GET'], csrf=False, cors="*")
     def get_exams_courses(self, **kw):
         """
         Retrieves the courses that the authenticated user has access to.
@@ -39,7 +39,7 @@ class CoursesAPI(http.Controller):
             return _http_error_response(f"Error retrieving courses: {str(e)}", 500)
 
     ## 🔹 [POST] Create a New Course
-    @http.route('/api/exams/courses/create', type='json', auth='public', methods=['POST'], csrf=False)
+    @http.route('/api/exams/courses/create', type='json', auth='public', methods=['POST'], csrf=False, cors="*")
     def create_exam_course(self, **kwargs):
         """
         Creates a new course and assigns the authenticated user to it.
@@ -76,7 +76,7 @@ class CoursesAPI(http.Controller):
 
 
     ## 🔹 [PUT] Update Course
-    @http.route('/api/exams/courses/update/', type='json', auth='public', methods=['PUT'], csrf=False)
+    @http.route('/api/exams/courses/update/', type='json', auth='public', methods=['PUT'], csrf=False, cors="*")
     def update_exam_course(self, **kwargs):
         """
         Updates an existing course if the user has access.
@@ -121,7 +121,7 @@ class CoursesAPI(http.Controller):
             return _error_response(f"Error updating course: {str(e)}", 500)
         
     ## 🔹 [PUT] Add course to user
-    @http.route('/api/exams/courses/update/add_user', type='json', auth='public', methods=['PUT'], csrf=False)
+    @http.route('/api/exams/courses/update/add_user', type='json', auth='public', methods=['PUT'], csrf=False, cors="*")
     def add_user_to_course(self, **kwargs):
         """
         Updates an existing course if the user has access.
@@ -170,7 +170,7 @@ class CoursesAPI(http.Controller):
         
 
     ## 🔹 [DELETE] Delete Course
-    @http.route('/api/exams/courses/delete/<int:course_id>', type='http', auth='public', methods=['DELETE'], csrf=False)
+    @http.route('/api/exams/courses/delete/<int:course_id>', type='http', auth='public', methods=['DELETE'], csrf=False, cors="*")
     def delete_exam_course(self, course_id, **kwargs):
         """
         Deletes a course if the user has access.

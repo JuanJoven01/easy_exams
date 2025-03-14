@@ -81,23 +81,24 @@ class ExamAttemptAPI(http.Controller):
                 'end_time': attempt.end_time.isoformat() if attempt.end_time else None,
                 'score': attempt.score,
                 'answer_ids': [{
-                        'question': {
-                            'id' : ans.question_id.id,
-                            'question_type': ans.question_id.question_type,
-                            'content': ans.question_id.content,
-                            'image': ans.question_id.image.decode('utf-8') if ans.question_id.image else None,
-                            'correct_answer': ans.question_id.correct_answer,
-                            'options' : [{
-                                    'id' : opt.id,
-                                    'content' : opt.content,
-                                    'is_correct' : opt.is_correct,
-                                }for opt in ans.question_id.option_ids],
-                            'pairs': [{
-                                    'id' : pair.id,
-                                    'term' : pair.term,
-                                    'match' : pair.match,
-                                } for pair in ans.question_id.pair_ids],
-                         },
+                        'question_id': ans.question_id.id,
+                        # 'question': {
+                        #     'id' : ans.question_id.id,
+                        #     'question_type': ans.question_id.question_type,
+                        #     'content': ans.question_id.content,
+                        #     'image': ans.question_id.image.decode('utf-8') if ans.question_id.image else None,
+                        #     'correct_answer': ans.question_id.correct_answer,
+                        #     'options' : [{
+                        #             'id' : opt.id,
+                        #             'content' : opt.content,
+                        #             'is_correct' : opt.is_correct,
+                        #         }for opt in ans.question_id.option_ids],
+                        #     'pairs': [{
+                        #             'id' : pair.id,
+                        #             'term' : pair.term,
+                        #             'match' : pair.match,
+                        #         } for pair in ans.question_id.pair_ids],
+                        #  },
                         'selected_options': [{
                                 'id': opt.id,
                                 'option_id': opt.question_option.id,

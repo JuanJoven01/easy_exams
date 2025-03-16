@@ -3,9 +3,10 @@ from openai import OpenAI
 import re
 import json
 
-def _use_deepSeek(sys_message, user_message):
+def _use_deepSeek(self, sys_message, user_message):
     try:
-        client = OpenAI(api_key="<DeepSeek API Key>", base_url="https://api.deepseek.com")
+        _api_key = self.env['ir.config_parameter'].sudo().get_param('exams_deep_seek')
+        client = OpenAI(api_key=_api_key, base_url="https://api.deepseek.com")
 
         response = client.chat.completions.create(
             model="deepseek-chat",
@@ -18,6 +19,7 @@ def _use_deepSeek(sys_message, user_message):
         return response.choices[0].message.content
     except:
         return '2'
+    
 class QuestionAnswer(models.Model):
     _name = 'easy_exams.question_answer'
     _description = 'Question Answer'
@@ -30,41 +32,19 @@ class QuestionAnswer(models.Model):
     q_score = fields.Float(string="Score between 0 and 1", default=2)
     answer_pair_ids = fields.One2many('easy_exams.question_answer_pair', 'answer_id', string="Answer Pairs")
 
-    @api.model_create_single
-    def create(self, vals):
-        """
-        
-        """
-        record = super(QuestionAnswer, self).create(vals)
-        self._qualify_answer(record)
-        return record
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        records = super(QuestionAnswer, self).create(vals_list)
+        for record in records:
+            self._qualify_answer(record)
+        return records
 
     def _qualify_answer(self, record):
         """
         
         """
         try:
-            if record.question_id.question_type == 'multiple_choice':
-                if not record.selected_option_ids:
-                    record.sudo().write({
-                        'is_correct': False,
-                        'q_score': 0
-                    })
-                else:
-                    all_options_correct = all(
-                        option.question_option.is_correct
-                        for option in record.selected_option_ids
-                    )
-                    if all_options_correct:
-                        record.sudo().write({
-                            'is_correct': True,
-                            'q_score': 1
-                        })
-                    else:
-                        record.sudo().write({
-                            'is_correct': False,
-                            'q_score': 0
-                        })
             if record.question_id.question_type == 'matching':
                 if not record.answer_pair_ids:
                     record.sudo().write({
@@ -100,6 +80,7 @@ class QuestionAnswer(models.Model):
                 score = 0
                 is_correct = False
                 api_response = _use_deepSeek(
+                    self,
                     """
                     You will help me automatically grade fill in the blank exams. To do this, I will provide you with the following information:
                     Answer order: I will specify whether the answers should be ordered or unordered.
@@ -128,6 +109,7 @@ class QuestionAnswer(models.Model):
                 score = 0
                 is_correct = False
                 api_response = _use_deepSeek(
+                    self,
                     """
                     You will help me automatically grade short or long answer questions. For this, I will provide you with the following:
                     Expected answer: The correct answer or a description of what the answer should include. This may also contain additional instructions about the expected response (e.g., specific details, format, or key points).

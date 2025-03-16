@@ -45,31 +45,6 @@ class QuestionAnswer(models.Model):
         
         """
         try:
-            if record.question_id.question_type == 'matching':
-                if not record.answer_pair_ids:
-                    record.sudo().write({
-                        'is_correct': False,
-                        'q_score': 0
-                    })
-                else:
-                    ok = 0
-                    bad = 0
-                    for selected_pair in record.answer_pair_ids:
-                        if selected_pair.selected_match == selected_pair.question_pair_id.match:
-                            ok += 1
-                        else: 
-                            bad += 1
-                    score = 0
-                    if ok + bad != 0:
-                        score = ok / (ok + bad)
-                    is_correct = False
-                    if score >= 0.6:
-                        is_correct = True
-                    
-                    record.sudo().write({
-                        'is_correct': is_correct,
-                        'q_score': score
-                    })
             if record.question_id.question_type == 'fill_in_the_blank':
                 regex = r'\{\{(\d+)\}\}'
                 expected_answers = re.findall(regex, record.question_id.correct_answer)

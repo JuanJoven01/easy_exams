@@ -47,8 +47,8 @@ class QuestionAnswer(models.Model):
         try:
             if record.question_id.question_type == 'fill_in_the_blank':
                 regex = r'\{\{(\d+)\}\}'
-                expected_answers = re.findall(regex, record.question_id.correct_answer)
-                expected_answers = str(expected_answers) #ensure is a list
+                expected_answers = re.findall(regex, record.question_id.content)
+                expected_answers = str(expected_answers) #ensure is a string
                 raw_answers = json.loads(record.answer_text)
                 answers = [raw_answer['value'] for raw_answer in raw_answers]
                 answers = str(answers)
@@ -65,6 +65,7 @@ class QuestionAnswer(models.Model):
                     The answers may contain grammatical errors but must be understandable.
                     The answers may be in another language but must mean the same as the ideal answers.
                     If the answers should be ordered, the position of each answer matters. If they should be unordered, only the content matters, not the order.
+                    If the answer is a number (int or float), the value mush be the exact value
                     Finally, you must calculate a score as a float between 0 and 1, where:
                     0 means all answers are incorrect.
                     1 means all answers are correct.
@@ -72,8 +73,7 @@ class QuestionAnswer(models.Model):
                     """,
                     f'{str(record.question_id.correct_answer)} {expected_answers} {answers}'
                 )
-                print('api response fill in the blank ')
-                print(api_response)
+                score = float(api_response)
                 if score >= 0.6:
                     is_correct = True
                 record.sudo().write({
@@ -93,6 +93,10 @@ class QuestionAnswer(models.Model):
                     The submitted answer may contain grammatical errors but must be understandable.
                     The submitted answer may be in another language but must convey the same meaning as the expected answer.
                     If the expected answer includes additional instructions (e.g., specific details or format), you must evaluate whether the submitted answer meets those requirements.
+                    It doesn't have to be a 100 per cent exact answer for your answer to be 1, you can be a little permissive, but maximum 10 per cent or 0.1
+                    Skip if the expected response or the response submitted by the user contains numbers or bullets
+                    If the expected answer has a grade, take it as instructions given to you as context for grading in a better way, but not as part of the expected answer.
+                    Be strict when it comes to values, they must be exact.
                     Finally, you must calculate a score as a float between 0 and 1, where:
                     0 means the answer is completely incorrect or does not meet the requirements.
                     1 means the answer is fully correct and meets all requirements.
@@ -100,8 +104,7 @@ class QuestionAnswer(models.Model):
                     """,
                     f'Expected answer: {str(record.question_id.correct_answer)} Submitted answer: {str(record.answer_text)}'
                 )
-                print('api response text ')
-                print(score)
+                score = float(api_response)
                 if score >= 0.6:
                     is_correct = True
                 record.sudo().write({

@@ -8,8 +8,6 @@ class QuestionAnswerPair(models.Model):
     question_pair_id = fields.Many2one('easy_exams.question_pair', string="Question Pair", required=True, ondelete='cascade')
     selected_match = fields.Char(string="Selected Match", required=True)
 
-
-
     @api.model_create_multi
     def create(self, vals_list):
         records = super(QuestionAnswerPair, self).create(vals_list)

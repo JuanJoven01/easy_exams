@@ -4,7 +4,7 @@ class ExamAttempt(models.Model):
     _name = 'easy_exams.exam_attempt'
     _description = 'Exam Attempt'
 
-    exam_id = fields.Many2one('easy_exams.exam', string="Exam", required=True)
+    exam_id = fields.Many2one('easy_exams.exam', string="Exam", required=True, ondelete='cascade' )
     student_name = fields.Char(string="Student Name", required=True)
     student_id = fields.Char(string="Student ID", required=True)
     start_time = fields.Datetime(string="Start Time", default=fields.Datetime.now)

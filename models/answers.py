@@ -7,7 +7,6 @@ def _use_deepSeek(self, sys_message, user_message):
     try:
         _api_key = self.env['ir.config_parameter'].sudo().get_param('exams_deep_seek')
         client = OpenAI(api_key=_api_key, base_url="https://api.deepseek.com")
-
         response = client.chat.completions.create(
             model="deepseek-chat",
             messages=[
@@ -46,7 +45,7 @@ class QuestionAnswer(models.Model):
         """
         try:
             if record.question_id.question_type == 'fill_in_the_blank':
-                regex = r'\{\{(\d+)\}\}'
+                regex = r'\{\{(.+?)\}\}'
                 expected_answers = re.findall(regex, record.question_id.content)
                 expected_answers = str(expected_answers) #ensure is a string
                 raw_answers = json.loads(record.answer_text)

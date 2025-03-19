@@ -31,6 +31,7 @@ class QuestionAnswer(models.Model):
     q_score = fields.Float(string="Score between 0 and 1", default=2)
     answer_pair_ids = fields.One2many('easy_exams.question_answer_pair', 'answer_id', string="Answer Pairs")
 
+    _qualifying = False
 
     @api.model_create_multi
     def create(self, vals_list):
@@ -39,11 +40,16 @@ class QuestionAnswer(models.Model):
             self._qualify_answer(record)
         return records
     
-    def write(self, vals_list):
-        records = super(QuestionAnswer, self).create(vals_list)
-        for record in records:
-            self._qualify_answer(record)
-        return records
+    def write(self, vals):
+        if not self.env.context.get('qualifying'): 
+            self = self.with_context(qualifying=True)  
+            result = super(QuestionAnswer, self).write(vals)
+            for record in self:
+                self._qualify_answer(record)
+        else:
+            result = super(QuestionAnswer, self).write(vals)
+        return result
+
 
     def _qualify_answer(self, record):
         """

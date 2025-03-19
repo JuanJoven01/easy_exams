@@ -14,11 +14,15 @@ class AnswerOption(models.Model):
             self._qualify_answer(record)
         return records
     
-    def write(self, vals_list):
-        records = super(AnswerOption, self).create(vals_list)
-        for record in records:
-            self._qualify_answer(record)
-        return records
+    def write(self, vals):
+        if not self.env.context.get('qualifying'): 
+            self = self.with_context(qualifying=True)  
+            result = super(AnswerOption, self).write(vals)
+            for record in self:
+                self._qualify_answer(record)
+        else:
+            result = super(AnswerOption, self).write(vals)
+        return result
 
     def _qualify_answer(self, record):
         """

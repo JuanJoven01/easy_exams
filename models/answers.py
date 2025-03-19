@@ -38,6 +38,12 @@ class QuestionAnswer(models.Model):
         for record in records:
             self._qualify_answer(record)
         return records
+    
+    def write(self, vals_list):
+        records = super(QuestionAnswer, self).create(vals_list)
+        for record in records:
+            self._qualify_answer(record)
+        return records
 
     def _qualify_answer(self, record):
         """

@@ -39,12 +39,20 @@ class QuestionAnswerPair(models.Model):
                 new_score = old_score + (1/number_of_matches)
                 is_correct = False 
                 if new_score >= 0.6:
-                    is_correct: True
+                    is_correct= True
                 answer.sudo().write({
                     'is_correct': is_correct,
                     'q_score': new_score
                 })
-        except:
+            else:
+                answer = self.env['easy_exams.question_answer'].sudo().search([('id', '=', record.answer_id.id)], limit=1)
+                old_score = answer.q_score
+                if old_score == 2:
+                    old_score = 0
+                    answer.sudo().write({
+                        'q_score': old_score
+                    })
+        except Exception as e:
             answer = self.env['easy_exams.question_answer'].sudo().search([('id', '=', record.answer_id.id)], limit=1)
             answer.sudo().write({
                     'is_correct': False,
